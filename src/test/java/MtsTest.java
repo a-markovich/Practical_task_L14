@@ -14,6 +14,9 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.time.Duration;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 public class MtsTest {
     WebDriver driver;
 
@@ -26,16 +29,16 @@ public class MtsTest {
     void setup() {
         driver = new ChromeDriver();
         driver.get("https://www.mts.by");
-        new WebDriverWait(driver, Duration.ofSeconds(10))
-                .until(ExpectedConditions.presenceOfElementLocated(By.id("cookie-agree"))).click();
+        driver.manage().window().maximize();
+        driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
+        driver.findElement(By.id("cookie-agree")).click();
     }
 
     @Test
-    void CheckBlockNameTest() {
-        new WebDriverWait(driver, Duration.ofSeconds(10))
-                .until(ExpectedConditions
-                        .textToBe(By.xpath("//div[@class='pay__wrapper']/h2"),
-                                "Онлайн пополнение\nбез комиссии"));
+    void checkBlockNameTest() {
+        String expected = "Онлайн пополнение\nбез комиссии";
+        String actual = driver.findElement(By.xpath("//div[@class='pay__wrapper']/h2")).getText();
+        assertEquals(expected, actual);
     }
 
     @ParameterizedTest(name = "{index}: {0}")
@@ -46,46 +49,34 @@ public class MtsTest {
             "mastercard-secure",
             "belkart"
     })
-    void CheckForPaymentSystemLogosTest(String request) {
-        new WebDriverWait(driver, Duration.ofSeconds(15))
-                .until(ExpectedConditions
-                        .visibilityOfElementLocated(By.xpath("//div[@class='pay__wrapper']" +
-                                "/.//img[contains(@src, '" + request + ".svg')]")));
+    void checkForPaymentSystemLogosTest(String request) {
+        WebElement logo = driver.findElement(By.xpath("//div[@class='pay__wrapper']" +
+                "/.//img[contains(@src, '" + request + ".svg')]"));
+        assertTrue(logo.isDisplayed());
     }
 
     @Test
-    void CheckLinkWorksTest() {
-        new WebDriverWait(driver, Duration.ofSeconds(10))
-                .until(ExpectedConditions
-                        .presenceOfElementLocated(By.xpath("//a[text()='Подробнее о сервисе']"))).click();
-        new WebDriverWait(driver, Duration.ofSeconds(15)).until(ExpectedConditions.
-                urlToBe("https://www.mts.by/help/poryadok-oplaty-i-bezopasnost-internet-platezhey/"));
+    void checkLinkWorksTest() {
+        String expected = "https://www.mts.by/help/poryadok-oplaty-i-bezopasnost-internet-platezhey/";
+        driver.findElement(By.xpath("//a[text()='Подробнее о сервисе']")).click();
+        assertEquals(expected, driver.getCurrentUrl());
     }
 
     @Test
     void checkButtonOperationTest() {
-        new WebDriverWait(driver, Duration.ofSeconds(10))
-                .until(ExpectedConditions
-                        .presenceOfElementLocated(By.xpath("//button[@class='select__header']"))).click();
-        new WebDriverWait(driver, Duration.ofSeconds(10))
-                .until(ExpectedConditions
-                        .presenceOfElementLocated(By.xpath("//p[@class='select__option']" +
-                                "[text()='Услуги связи']"))).click();
-        WebElement inputPhoneElem = new WebDriverWait(driver, Duration.ofSeconds(10))
-                .until(ExpectedConditions.presenceOfElementLocated(By.id("connection-phone")));
+        driver.findElement(By.xpath("//button[@class='select__header']")).click();
+        driver.findElement(By.xpath("//p[@class='select__option']")).click();
+        WebElement inputPhoneElem = driver.findElement(By.id("connection-phone"));
         inputPhoneElem.click();
         inputPhoneElem.sendKeys("297777777");
-        WebElement inputSumElem = new WebDriverWait(driver, Duration.ofSeconds(10))
-                .until(ExpectedConditions.presenceOfElementLocated(By.id("connection-sum")));
+        WebElement inputSumElem = driver.findElement(By.id("connection-sum"));
         inputSumElem.click();
         inputSumElem.sendKeys("10");
-        new WebDriverWait(driver, Duration.ofSeconds(10))
+        driver.findElement(By.xpath("//div[@class='pay__forms']/.//button")).click();
+        WebElement iframeElem = (new WebDriverWait(driver, Duration.ofSeconds(20)))
                 .until(ExpectedConditions
-                        .presenceOfElementLocated(By.xpath("//div[@class='pay__forms']" +
-                                "/.//button"))).click();
-        new WebDriverWait(driver, Duration.ofSeconds(20))
-                .until(ExpectedConditions
-                        .frameToBeAvailableAndSwitchToIt(By.xpath("//iframe[@class='bepaid-iframe']")));
+                        .visibilityOfElementLocated(By.xpath("//iframe[@class='bepaid-iframe']")));
+        assertTrue(iframeElem.isDisplayed());
     }
 
     @AfterEach
