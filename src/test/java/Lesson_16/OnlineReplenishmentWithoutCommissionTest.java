@@ -66,7 +66,7 @@ public class OnlineReplenishmentWithoutCommissionTest {
                 .findElement(By.xpath("//p[@class='select__option'][text()='Услуги связи']"));
         WebElement inputPhoneElem = driver.findElement(By.id("connection-phone"));
         WebElement inputSumElem = driver.findElement(By.id("connection-sum"));
-        WebElement btn = driver.findElement(By.xpath("//div[@class='pay__forms']/.//button"));
+        WebElement btn = driver.findElement(By.xpath("//form[@id='pay-connection']/button"));
 
         selectHeader.click();
         selectOption.click();
