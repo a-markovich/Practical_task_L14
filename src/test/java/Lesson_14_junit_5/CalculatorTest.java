@@ -1,3 +1,5 @@
+package Lesson_14_junit_5;
+
 import Lesson_14_junit_5.Calculator;
 import Lesson_14_junit_5.FactorialException;
 import org.junit.jupiter.params.ParameterizedTest;
